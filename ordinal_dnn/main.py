@@ -5,10 +5,8 @@ import torch
 import os
 
 # My functions
-from ClsKL.train import train_kl
-from ClsKL.test import test_kl
-import ClsKL.utils.utils_functions as uf
-from ClsKL.utils import plots
+from ordinal_dnn import test, train
+import ordinal_dnn.utils.utils_functions as uf
 
 
 # Ignore randomness
@@ -64,16 +62,15 @@ if __name__ == '__main__':
     args.model_name = '{}-{}-{}-{}'.format(args.net_type, args.depth, args.optim, args.wloss)
 
     # Train NN (create weights):
-    train_kl.train_build_models(args)
+    train.train_build_models(args)
 
-    # Validate and test the model over tha framework:
-    best_epoch = train_kl.phases_build_all_criterions(args)
+    # Validate and test the model:
+    best_epoch = test.phases_build_all_criterions(args)
     print('The best epoch is: ' + str(best_epoch))
 
-    # Test old printing:
     # args.phase = 'test'
     # args.batch_size = 16
-    # test_kl.test_models(args, best_epoch)
+    test.test_models(args, best_epoch)
 
     # Create more graphs
     # plots.create_external_graphs(args)

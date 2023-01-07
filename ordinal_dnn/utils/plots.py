@@ -7,7 +7,7 @@ import matplotlib.ticker as ticker
 import shutil
 
 # My functions
-from ClsKL.utils.train_eng import stopping_epoch
+from ordinal_dnn.utils.train_eng import stopping_epoch
 
 
 # def plot_loss_results(args, model, dset_loaders, dset_size):

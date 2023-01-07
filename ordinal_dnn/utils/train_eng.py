@@ -10,11 +10,11 @@ import pandas as pd
 import numpy as np
 
 # My functions
-from ClsKL.utils.torch_util import LRScheduler
+from ordinal_dnn.utils.torch_util import LRScheduler
 # from torch_util import LRScheduler
-from ClsKL.utils.loss_util import weighted_loss
-from ClsKL.utils.eval_eng import eval_test
-import ClsKL.utils.utils_functions as uf
+from ordinal_dnn.utils.loss_util import weighted_loss
+from ordinal_dnn.utils.eval_eng import eval_test
+import ordinal_dnn.utils.utils_functions as uf
 from torch.nn.utils import clip_grad_value_
 
 def stopping_epoch(val_df, early_stopping):

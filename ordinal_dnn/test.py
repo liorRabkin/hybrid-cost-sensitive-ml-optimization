@@ -1,46 +1,61 @@
-import os, sys
-import numpy as np
-import torch
+import os, sys, pdb
+import argparse
+
 import pandas as pd
-import shutil
+import torch
+from torchvision import models
+import numpy as np
+
+# My functions
+from ordinal_dnn.utils.loader import data_load
+from ordinal_dnn.utils.eval_eng import gen_vis_loc, gen_grad_cam, eval_test
+from ordinal_dnn.utils.eval_eng import eval_test
+from ordinal_dnn.ml_and_or.ml_to_or import ml_and_or
+from ordinal_dnn.utils import plots
+from ordinal_dnn.utils.train_eng import stopping_epoch
 
 FILE_PATH = os.path.abspath(__file__)
 PRJ_PATH = os.path.dirname(os.path.dirname(FILE_PATH))
 sys.path.append(PRJ_PATH)
 
-# My functions
-from ClsKL.utils.loader import data_load
-from ClsKL.utils.model import cls_model
-from ClsKL.utils.train_eng import train_model
-from ClsKL.utils.train_eng import stopping_epoch
-# from utils.model import resnet
-from ClsKL.ml_and_or.ml_to_or import ml_and_or
-import ClsKL.utils.utils_functions as uf
-from ClsKL.utils import plots
-from ClsKL.utils.eval_eng import eval_test
 
+def test_models(args, best_epoch):
+    best_models_path = os.path.join(args.model_dir, args.model_name) #, str(0))
+    assert os.path.exists(best_models_path), "Model does not exist"
 
-def train_build_models(args):
-    """Train the model - create file with weights for each epoch"""
-
-    print('--Phase 0: Argument settings--')
-
-    print('--Phase 1: Data prepration--')
     dset_loaders, dset_size, num_class = data_load(args)
-    args.num_class = num_class
-    # uf.data_distribution(dset_loaders)
 
-    print('--Phase 2: Model setup--')
-    model = cls_model(args)
+
+    # Cost
+    cost_path = os.path.join(best_models_path, 'cost')
+    assert os.path.exists(cost_path), "Cost Models does not exist"
+    best_epoch_cost_path = os.path.join(best_models_path, 'cost', 'model-epoch_number_' + str(best_epoch))
+
+    model = torch.load(best_epoch_cost_path)
     model.cuda()
+    model.eval()
+    # Evaluate model
+    print('---Evaluate Cost model : {}--'.format(args.phase))
+    _, _, _, _ = eval_test(args, model, dset_loaders, dset_size, args.phase)
 
-    print('--Phase 3: Model training--')
-    train_model(args, model, dset_loaders, dset_size)
-    # plots.plot_loss_results(args, model, dset_loaders, dset_size)
-    # plots.plot_acc_func_epoch(args.num_epoch, acc_train_epochs, acc_val_epochs)
+
+    # Mse
+    mse_path = os.path.join(best_models_path, 'mse', os.listdir(os.path.join(best_models_path, 'mse'))[0])
+
+    model = torch.load(mse_path)
+    model.cuda()
+    # Evaluate model
+    print('---Evaluate Mse model : {}--'.format(args.phase))
+    _, _, _, _ = eval_test(args, model, dset_loaders, dset_size, args.phase)
 
 
-def phases_build_all_criterions(args): #, stopping_epoch):
+
+    # Generate saliency visulization
+    # gen_vis_loc(args, phase, dset_loaders, dset_size, args.save_dir)
+    # gen_grad_cam(args, phase, dset_loaders, dset_size, args.save_dir)
+
+
+def phases_build_all_criterions(args):
     """Validate and Test the framework -
     create plot ofcost results as function of epochs,
      transition matrices, excel with detailed information,
