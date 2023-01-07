@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
 import os, sys, pdb
-import  argparse
+import argparse
 import torch
 from torchvision import models
 import numpy as np
@@ -10,38 +8,42 @@ FILE_PATH = os.path.abspath(__file__)
 PRJ_PATH = os.path.dirname(os.path.dirname(FILE_PATH))
 sys.path.append(PRJ_PATH)
 
-from utils.loader import data_load
-from utils.eval_eng import eval_model, gen_vis_loc, gen_grad_cam
+# My functions
+from ClsKL.utils.loader import data_load
+from ClsKL.utils.eval_eng import gen_vis_loc, gen_grad_cam
+from ClsKL.utils.eval_eng import eval_test
 
 
-def set_args():
-    parser = argparse.ArgumentParser(description='Pytorch Fine-Tune KL grading testing')
-    parser.add_argument('--cuda-id',               type=int, default=0)
-    parser.add_argument('--batch-size',            type=int, default=16)
-    parser.add_argument('--data-dir',              type=str, default='../../data/ClsKLData/kneeKL224')
-    parser.add_argument('--model_dir',             type=str, default='')
-    parser.add_argument('--best_model_name',       type=str, default='')
-    # parser.add_argument('--save_dir',              type=str, default='../../data/ClsKLData/models/CAMs/')
-    parser.add_argument('--phase',                 type=str, default="test", choices=["test", "auto_test"])
-
-    args = parser.parse_args()
-    return args
-
-
-if __name__ == "__main__":
-    args = set_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.cuda_id)
-    import torch.backends.cudnn as cudnn
-    cudnn.benchmark = True
-
-    args.best_model_path = os.path.join(args.model_dir, args.best_model_name)
-    assert os.path.exists(args.best_model_path), "Model doesnot exist"
+def test_models(args, best_epoch):
+    best_models_path = os.path.join(args.model_dir, args.model_name) #, str(0))
+    assert os.path.exists(best_models_path), "Model does not exist"
 
     dset_loaders, dset_size, num_class = data_load(args)
 
+
+    # Cost
+    cost_path = os.path.join(best_models_path, 'cost')
+    assert os.path.exists(cost_path), "Cost Models does not exist"
+    best_epoch_cost_path = os.path.join(best_models_path, 'cost', 'model-epoch_number_' + str(best_epoch))
+
+    model = torch.load(best_epoch_cost_path)
+    model.cuda()
+    model.eval()
     # Evaluate model
-    print('---Evaluate model : {}--'.format(args.phase))
-    eval_model(args, args.phase, dset_loaders, dset_size)
+    print('---Evaluate Cost model : {}--'.format(args.phase))
+    _, _, _, _ = eval_test(args, model, dset_loaders, dset_size, args.phase)
+
+
+    # Mse
+    mse_path = os.path.join(best_models_path, 'mse', os.listdir(os.path.join(best_models_path, 'mse'))[0])
+
+    model = torch.load(mse_path)
+    model.cuda()
+    # Evaluate model
+    print('---Evaluate Mse model : {}--'.format(args.phase))
+    _, _, _, _ = eval_test(args, model, dset_loaders, dset_size, args.phase)
+
+
 
     # Generate saliency visulization
     # gen_vis_loc(args, phase, dset_loaders, dset_size, args.save_dir)
