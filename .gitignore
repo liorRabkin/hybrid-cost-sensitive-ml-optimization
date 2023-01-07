@@ -11,6 +11,7 @@ doc/
 env/
 ENV/
 __pycache__/
+.idea/
 
 
 # Files
