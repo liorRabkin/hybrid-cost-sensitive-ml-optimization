@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-
-import os, sys, pdb
 import torch.utils.data as data
-
 from PIL import Image
 import os
 import os.path
@@ -45,11 +41,13 @@ def make_dataset(dir, class_to_idx):
 
     return images
 
+
 def pil_loader(path):
     # open path as file to avoid ResourceWarning (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
+
 
 def accimage_loader(path):
     import accimage
@@ -59,12 +57,14 @@ def accimage_loader(path):
         # Potentially a decoding problem, fall back to PIL.Image
         return pil_loader(path)
 
+
 def default_loader(path):
     from torchvision import get_image_backend
     if get_image_backend() == 'accimage':
         return accimage_loader(path)
     else:
         return pil_loader(path)
+
 
 class ImageFolder(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
@@ -92,8 +92,9 @@ class ImageFolder(data.Dataset):
         classes, class_to_idx = find_classes(root)
         imgs = make_dataset(root, class_to_idx)
         if len(imgs) == 0:
-            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+            raise (RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+                                                                             "Supported image extensions are: " + ",".join(
+                IMG_EXTENSIONS)))
 
         self.root = root
         self.imgs = imgs

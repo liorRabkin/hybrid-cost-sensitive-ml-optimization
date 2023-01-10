@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import os, sys, pdb
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -9,15 +6,15 @@ from torchvision import models
 def cls_model(args):
     if args.net_type == "resnet":
         if args.depth == "18":
-            model = models.resnet18(pretrained = args.pretrained)
+            model = models.resnet18(pretrained=args.pretrained)
         elif args.depth == "34":
-            model = models.resnet34(pretrained = args.pretrained)
+            model = models.resnet34(pretrained=args.pretrained)
         elif args.depth == "50":
-            model = models.resnet50(pretrained = args.pretrained)
+            model = models.resnet50(pretrained=args.pretrained)
         elif args.depth == "101":
-            model = models.resnet101(pretrained = args.pretrained)
+            model = models.resnet101(pretrained=args.pretrained)
         elif args.depth == "152":
-            model = models.resnet152(pretrained = args.pretrained)
+            model = models.resnet152(pretrained=args.pretrained)
         else:
             return None
 
@@ -26,13 +23,13 @@ def cls_model(args):
 
     elif args.net_type == "vgg":
         if args.depth == "16":
-            model = models.vgg16(pretrained = args.pretrained)
+            model = models.vgg16(pretrained=args.pretrained)
         elif args.depth == "19":
-            model = models.vgg19(pretrained = args.pretrained)
+            model = models.vgg19(pretrained=args.pretrained)
         elif args.depth == "16bn":
-            model = models.vgg16_bn(pretrained = args.pretrained)
+            model = models.vgg16_bn(pretrained=args.pretrained)
         elif args.depth == "19bn":
-            model = models.vgg19_bn(pretrained = args.pretrained)
+            model = models.vgg19_bn(pretrained=args.pretrained)
         else:
             return None
 
@@ -44,11 +41,11 @@ def cls_model(args):
 
     elif args.net_type == "densenet":
         if args.depth == "121":
-            model = models.densenet121(pretrained = args.pretrained)
+            model = models.densenet121(pretrained=args.pretrained)
         elif args.depth == "169":
-            model = models.densenet169(pretrained = args.pretrained)
+            model = models.densenet169(pretrained=args.pretrained)
         elif args.depth == "201":
-            model = models.densenet201(pretrained = args.pretrained)
+            model = models.densenet201(pretrained=args.pretrained)
         else:
             return None
 
@@ -57,7 +54,7 @@ def cls_model(args):
 
     elif args.net_type == "inception":
         if args.depth == "v3":
-            model = models.inception_v3(pretrained = args.pretrained)
+            model = models.inception_v3(pretrained=args.pretrained)
         else:
             return None
 

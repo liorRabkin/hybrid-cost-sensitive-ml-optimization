@@ -1,30 +1,20 @@
-import os, sys, pdb
-import argparse
-
+import os
 import pandas as pd
 import torch
-from torchvision import models
-import numpy as np
 
 # My functions
-from ordinal_dnn.utils.loader import data_load
-from ordinal_dnn.utils.eval_eng import gen_vis_loc, gen_grad_cam, eval_test
-from ordinal_dnn.utils.eval_eng import eval_test
 from ordinal_dnn.ml_and_or.ml_to_or import ml_and_or
 from ordinal_dnn.utils import plots
+from ordinal_dnn.utils.eval_eng import eval_test
+from ordinal_dnn.utils.loader import data_load
 from ordinal_dnn.utils.train_eng import stopping_epoch
-
-FILE_PATH = os.path.abspath(__file__)
-PRJ_PATH = os.path.dirname(os.path.dirname(FILE_PATH))
-sys.path.append(PRJ_PATH)
 
 
 def test_models(args, best_epoch):
-    best_models_path = os.path.join(args.model_dir, args.model_name) #, str(0))
+    best_models_path = os.path.join(args.model_dir, args.model_name)  # , str(0))
     assert os.path.exists(best_models_path), "Model does not exist"
 
     dset_loaders, dset_size, num_class = data_load(args)
-
 
     # Cost
     cost_path = os.path.join(best_models_path, 'cost')
@@ -34,30 +24,25 @@ def test_models(args, best_epoch):
     model = torch.load(best_epoch_cost_path)
     model.cuda()
     model.eval()
+
     # Evaluate model
     print('---Evaluate Cost model : {}--'.format(args.phase))
     _, _, _, _ = eval_test(args, model, dset_loaders, dset_size, args.phase)
-
 
     # Mse
     mse_path = os.path.join(best_models_path, 'mse', os.listdir(os.path.join(best_models_path, 'mse'))[0])
 
     model = torch.load(mse_path)
     model.cuda()
+
     # Evaluate model
     print('---Evaluate Mse model : {}--'.format(args.phase))
     _, _, _, _ = eval_test(args, model, dset_loaders, dset_size, args.phase)
 
 
-
-    # Generate saliency visulization
-    # gen_vis_loc(args, phase, dset_loaders, dset_size, args.save_dir)
-    # gen_grad_cam(args, phase, dset_loaders, dset_size, args.save_dir)
-
-
 def phases_build_all_criterions(args):
     """Validate and Test the framework -
-    create plot ofcost results as function of epochs,
+    create plot of cost results as function of epochs,
      transition matrices, excel with detailed information,
     and find stopping epoch according to validation results"""
 
@@ -70,10 +55,12 @@ def phases_build_all_criterions(args):
     for cons_class in args.labels_for_const:
         classes_for_const += '_' + str(cons_class)
 
+    excel_title = str(loss) + '_' + str(args.num_epoch) + '_epochs_and_stop_after_' + str(
+        args.early_stopping) + '_epochs_const_on_class' + classes_for_const + '_with_const_' + str(
+        args.const_number) + '%'
 
-    excel_title = str(loss) + '_' + str(args.num_epoch) + '_epochs_and_stop_after_' + str(args.early_stopping) + '_epochs_const_on_class' + classes_for_const + '_with_const_' + str(args.const_number) + '%'
-
-    draw_path = os.path.join(args.model_dir, args.model_name, 'maps_const_'+str(args.const_number)+'%_on_class'+classes_for_const)
+    draw_path = os.path.join(args.model_dir, args.model_name,
+                             'maps_const_' + str(args.const_number) + '%_on_class' + classes_for_const)
     os.makedirs(draw_path, exist_ok=True)
 
     dict_all_phases_cost = {}
@@ -85,8 +72,8 @@ def phases_build_all_criterions(args):
 
         print('--Phase 3: Ml to Or--')
         dict_all_phases_cost[phase], dict_all_phases_acc[phase], ml_lab, or_lab = \
-            ml_and_or(args, df_epochs, args.cost_matrix, args.fault_price, args.const_number, args.number_of_labels, excel_title, phase, args.labels_for_const)
-        # dict_all_phases_cost[phase], dict_all_phases_acc[phase], ml_lab, or_lab = build_ml_and_or(args, phase, df_epochs, excel_title)
+            ml_and_or(args, df_epochs, args.cost_matrix, args.fault_price, args.const_number, args.number_of_labels,
+                      excel_title, phase, args.labels_for_const)
 
         if phase != 'train':
 
@@ -104,12 +91,12 @@ def phases_build_all_criterions(args):
                                                      or_lab[phase + ' epoch' + str(best_epoch)], args.number_of_labels)
             mistakes = [mistakes_real_ml, mistakes_ml_or, mistakes_real_or]
 
-
             plots.draw_maps(mistakes, args.number_of_labels, phase + '_' + excel_title, draw_path)
             print('end draw maps')
 
     print('--Phase 6: Plots--')
-    plots_path = os.path.join(args.model_dir, args.model_name, 'plots_const_'+str(args.const_number)+'%_on_class'+classes_for_const)
+    plots_path = os.path.join(args.model_dir, args.model_name,
+                              'plots_const_' + str(args.const_number) + '%_on_class' + classes_for_const)
     os.makedirs(plots_path, exist_ok=True)
     print('plot cost and acc as function of epochs')
     plots.crit_as_epochs(dict_all_phases_cost, 'cost', plots_path, excel_title, best_epoch)
@@ -119,14 +106,12 @@ def phases_build_all_criterions(args):
 
 
 def build_pd_from_model(args, phase):
-
     print('--Phase 1: Data prepration--')
     dset_loaders, dset_size, num_class = data_load(args)
 
     print('--Phase 2: Model loading--')
     best_models_path = os.path.join(args.model_dir, args.model_name)  # , str(0))
     assert os.path.exists(best_models_path), "Model does not exist"
-    # list_path_epochs = os.listdir(os.path.join(best_models_path, 'cost'))
 
     df_epochs = pd.DataFrame()
     max_epoch = args.num_epoch
@@ -137,9 +122,8 @@ def build_pd_from_model(args, phase):
         model.cuda()
         model.eval()
         acc, mse, outputs_all, labels_all = eval_test(args, model, dset_loaders, dset_size, phase)
-        df_epochs[phase + ' epoch' + str(epoch+1)] = pd.Series(outputs_all)
-        df_epochs[phase + ' labels epoch' + str(epoch+1)] = pd.Series(labels_all)
-        # print(f'{phase} epoch number {epoch+1}')
+        df_epochs[phase + ' epoch' + str(epoch + 1)] = pd.Series(outputs_all)
+        df_epochs[phase + ' labels epoch' + str(epoch + 1)] = pd.Series(labels_all)
 
     print('df_epochs')
     print(df_epochs)

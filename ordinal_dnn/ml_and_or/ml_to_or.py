@@ -16,16 +16,16 @@ def ml_and_or(args, df_epochs, cost_matrix, fault_price, const_num,
     for cons_class in labels_for_const:
         classes_for_const += '_' + str(cons_class)
 
-    excel_path = os.path.join(args.model_dir, args.model_name, 'excels_const_'+str(const_num)+'%_on_class'+classes_for_const)
+    excel_path = os.path.join(args.model_dir, args.model_name,
+                              'excels_const_' + str(const_num) + '%_on_class' + classes_for_const)
     os.makedirs(excel_path, exist_ok=True)
-    excel_name = os.path.join(excel_path, phase+'_'+excel_title+'.xlsx')
+    excel_name = os.path.join(excel_path, phase + '_' + excel_title + '.xlsx')
 
     with pd.ExcelWriter(excel_name) as writer:
         print('ml_to_or starting')
 
         df_cost = pd.DataFrame()
         df_acc = pd.DataFrame()
-
 
         or_real_cost = []
         ml_real_cost = []
@@ -37,7 +37,8 @@ def ml_and_or(args, df_epochs, cost_matrix, fault_price, const_num,
         columns_output = [x for x in df_epochs.columns if 'labels' not in x]
         columns_labels = [x for x in df_epochs.columns if 'labels' in x]
 
-        for outputs, labels in zip(columns_output, columns_labels):  # range(int(df_epochs.shape[1]/2)): #best_epoch_for_cost): #
+        for outputs, labels in zip(columns_output,
+                                   columns_labels):  # range(int(df_epochs.shape[1]/2)): #best_epoch_for_cost): #
 
             ml_predict_prob = np.array(df_epochs[outputs].tolist())
             objective_function, or_predict_hard = operation_research_func(
@@ -47,7 +48,6 @@ def ml_and_or(args, df_epochs, cost_matrix, fault_price, const_num,
 
             ml_lab[outputs] = results['ML decision labels']
             or_lab[outputs] = results['OR decision labels']
-
 
             # or_df['epoch'+str(epoch_column)] = or_predict_hard
             # results mean
@@ -70,7 +70,6 @@ def ml_and_or(args, df_epochs, cost_matrix, fault_price, const_num,
             # print(f'phase {phase} epoch {epoch_column+1} in train_eng going to ml_or')
             # print(f'acc {results_mean["ML accuracy"]}')
 
-
         df_cost['or cost'] = or_real_cost
         df_cost['ml cost'] = ml_real_cost
         df_acc['or acc'] = or_acc
@@ -78,16 +77,15 @@ def ml_and_or(args, df_epochs, cost_matrix, fault_price, const_num,
 
         total_results = build_excel_mean_of_folds(all_results, sheets_names)
         total_results.to_excel(writer, sheet_name='total')
-        df_cost['epoch'] = pd.Series([i+1 for i in range(len(or_real_cost))])
-        df_acc['epoch'] = pd.Series([i+1 for i in range(len(or_real_cost))])
-
+        df_cost['epoch'] = pd.Series([i + 1 for i in range(len(or_real_cost))])
+        df_acc['epoch'] = pd.Series([i + 1 for i in range(len(or_real_cost))])
 
     print('end')
     return df_cost, df_acc, ml_lab, or_lab
 
 
 def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_of_labels):
-    #ML vect and matrix
+    # ML vect and matrix
     ml_predict_hard = np.argmax(ml_predict_prob, axis=1)
     # if ml_predict_hard.shape[0] != ml_predict_hard.size:
     #     ml_predict_hard_vect = np.argmax(ml_predict_hard, axis=1)
@@ -110,7 +108,7 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
 
     # -------------------------------------------------------
 
-    #Indices
+    # Indices
     indices_ml = uf.indices(number_of_labels, lab, ml_predict_hard_vect, cost_matrix)
     indices_or = uf.indices(number_of_labels, lab, or_predict_hard, cost_matrix)
 
@@ -122,14 +120,14 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
     results['OR real cost'] = indices_or['cost']
     results['ML (min-cost) real cost'] = uf.cost_pred_vector(cost_matrix, predict_labels_min_cost, lab)
 
-    #cost per class
+    # cost per class
     # for test_label in range(number_of_labels):
     #     test_label_vector = test_label * np.ones(lab.shape, dtype=int)
     #     results['OR real class ' + str(test_label) + 'cost'] = uf.cost_pred_matrix(cost_matrix, test_label_vector, ml_predict_prob)
 
-
     # ML vs OR
-    results['ML (max_likelihood) ML (min-cost) cost'] = uf.cost_pred_matrix(cost_matrix, predict_labels_min_cost, ml_predict_hard_matrix)
+    results['ML (max_likelihood) ML (min-cost) cost'] = uf.cost_pred_matrix(cost_matrix, predict_labels_min_cost,
+                                                                            ml_predict_hard_matrix)
     results['ML (min-cost) OR cost'] = uf.cost_pred_vector(cost_matrix, predict_labels_min_cost, or_predict_hard)
     results['ML (max_likelihood) OR cost'] = uf.cost_pred_matrix(cost_matrix, or_predict_hard, ml_predict_hard_matrix)
 
@@ -150,8 +148,7 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
     var = x2p - np.power(xp, 2)
     results['variance'] = var
 
-
-    #Mean Squared Error
+    # Mean Squared Error
     mse = np.zeros(ml_predict_prob.shape[0])
 
     x = np.arange(number_of_labels)
@@ -160,7 +157,7 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
         mse += np.power((x[index_prob_vector] - mode), 2) * ml_predict_prob[:, index_prob_vector]
     results['MSE'] = mse
 
-    #AUC
+    # AUC
     results['ML AUC'] = indices_ml['auc'].mean()
     results['OR AUC'] = indices_or['auc'].mean()
 
@@ -168,7 +165,6 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
     results['equal - no moves'] = abs(lab - ml_predict_hard) == abs(lab - or_predict_hard)
     results['pos move'] = abs(lab - ml_predict_hard) > abs(lab - or_predict_hard)
     results['neg move'] = abs(lab - ml_predict_hard) < abs(lab - or_predict_hard)
-
 
     # Diff
 
@@ -179,20 +175,18 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
     results['total moves diff'] = np.where(diff > 0, diff, 0) - np.where(diff < 0, diff, 0)
     results['moves - abs result'] = diff
 
-
-
     # Cost diff
     lab_predict_hard_matrix = np.eye(number_of_labels)[lab]
     diff_cost_lab_ml = uf.cost_pred_matrix(cost_matrix, ml_predict_hard, lab_predict_hard_matrix)
     diff_cost_lab_or = uf.cost_pred_matrix(cost_matrix, or_predict_hard, lab_predict_hard_matrix)
     diff_cost_ml_or = uf.cost_pred_matrix(cost_matrix, or_predict_hard, ml_predict_hard_matrix)
 
-    diff_cost = diff_cost_lab_ml-diff_cost_lab_or
+    diff_cost = diff_cost_lab_ml - diff_cost_lab_or
     results['pos move cost'] = np.where(diff_cost > 0, diff_cost, 0)
     results['neg move cost'] = -1 * np.where(diff_cost < 0, diff_cost, 0)
 
     results['total moves cost'] = np.where(diff_cost > 0, diff, 0) - np.where(diff_cost < 0, diff_cost, 0)
-    sum_cost = diff_cost_lab_ml+diff_cost_ml_or
+    sum_cost = diff_cost_lab_ml + diff_cost_ml_or
     results['Sum cost'] = sum_cost
 
     # Steps
@@ -200,7 +194,8 @@ def build_excel_fold(lab, ml_predict_prob, or_predict_hard, cost_matrix, number_
     results['steps real ML'] = abs(lab - ml_predict_hard)
     results['steps ML OR'] = abs(ml_predict_hard - or_predict_hard)
 
-    results['steps ML OR for moving'] = np.where(abs(ml_predict_hard - or_predict_hard) > 0, abs(ml_predict_hard - or_predict_hard), np.nan)
+    results['steps ML OR for moving'] = np.where(abs(ml_predict_hard - or_predict_hard) > 0,
+                                                 abs(ml_predict_hard - or_predict_hard), np.nan)
 
     results['steps real Or'] = abs(lab - or_predict_hard)
     results['total steps sum'] = abs(lab - ml_predict_hard) + abs(ml_predict_hard - or_predict_hard)

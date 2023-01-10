@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import os, sys, pdb
-
 import torch
 import torch.nn as nn
 import numpy as np
@@ -15,6 +11,7 @@ def extract_vgg_fea_layer(model, inputs):
     vgg_feas = fea_extractor(x)
 
     return vgg_feas
+
 
 def extract_gap_layer(model, inputs):
     x = model.conv1(inputs)
@@ -31,6 +28,7 @@ def extract_gap_layer(model, inputs):
     x = x.view(gap.size(0), -1)
 
     return x
+
 
 def gen_cam_visual(model, inputs):
     x = model.conv1(inputs)
@@ -57,7 +55,7 @@ def gen_cam_visual(model, inputs):
 
     cams = []
     for ind in range(fea77.shape[0]):
-        cur_w = class_w[ind:ind+1, :]
+        cur_w = class_w[ind:ind + 1, :]
         cur_fea = fea77[ind].reshape(fea77.shape[1], -1)
         fea_map = np.matmul(cur_w, cur_fea).reshape(fea77.shape[2], fea77.shape[3])
         fea_map = (fea_map - np.amin(fea_map)) * 1.0 / (np.amax(fea_map) - np.amin(fea_map))

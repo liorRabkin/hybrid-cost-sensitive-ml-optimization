@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-
-import os, sys
 import numpy as np
+
 
 def build_cof_mat(num, poly_num=2):
     assert num > 2, "num should bigger than 2"
     cof_mat = np.zeros((num, num), dtype=np.float32)
     for i in range(0, num):
         for j in range(0, num):
-            cof_mat[i, j] = np.power(np.absolute(i-j), poly_num)
+            cof_mat[i, j] = np.power(np.absolute(i - j), poly_num)
 
     return cof_mat
 

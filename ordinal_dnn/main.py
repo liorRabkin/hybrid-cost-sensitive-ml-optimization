@@ -50,8 +50,6 @@ if __name__ == '__main__':
     args = set_args()
     os.environ["CUDA_VISIBLE_DEVICES"] = str(args.cuda_id)
 
-    # cost_matrix = uf.cost_matrix_generator(5)
-
     args.cost_matrix = np.array([[1, 3, 5, 7, 9],
                                  [3, 1, 3, 5, 7],
                                  [5, 3, 1, 3, 5],
@@ -64,7 +62,7 @@ if __name__ == '__main__':
     # Train NN (create weights):
     train.train_build_models(args)
 
-    # Validate and test the model:
+    # Validate and Test the model:
     best_epoch = test.phases_build_all_criterions(args)
     print('The best epoch is: ' + str(best_epoch))
 

@@ -1,4 +1,3 @@
-import os, sys, pdb
 import torch
 import numpy as np
 
@@ -8,12 +7,10 @@ def weighted_loss(outputs, labels, args, cost_matrix):
     prob_pred = softmax_op(outputs)
 
     cls_weights = np.array([[1, 3, 5, 7, 9],
-                             [3, 1, 3, 5, 7],
-                             [5, 3, 1, 3, 5],
-                             [7, 5, 3, 1, 3],
-                             [9, 7, 5, 3, 1]], dtype=np.float)
-    # cls_weights = cls_weights + 1.0
-    # np.fill_diagonal(cls_weights, 0)
+                            [3, 1, 3, 5, 7],
+                            [5, 3, 1, 3, 5],
+                            [7, 5, 3, 1, 3],
+                            [9, 7, 5, 3, 1]], dtype=np.float)
 
     batch_num, class_num = outputs.size()
 
@@ -23,8 +20,6 @@ def weighted_loss(outputs, labels, args, cost_matrix):
         class_hot[ind, :] = cls_weights[labels_np[ind], :]
     class_hot = torch.from_numpy(class_hot)
     class_hot = torch.autograd.Variable(class_hot).cuda()
-    # print("prob_pred", prob_pred)
-    # print("1-prob_pred", 1 - prob_pred)
     loss = torch.sum((prob_pred * class_hot) ** 2) / batch_num
 
     return loss

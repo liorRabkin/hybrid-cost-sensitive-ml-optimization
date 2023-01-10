@@ -1,21 +1,15 @@
-# -*- coding: utf-8 -*-
-
 import os, sys, pdb
 import shutil
 import torch
 from torch import nn, optim
 from torch.autograd import Variable
 import time
-import pandas as pd
-import numpy as np
 
 # My functions
 from ordinal_dnn.utils.torch_util import LRScheduler
-# from torch_util import LRScheduler
 from ordinal_dnn.utils.loss_util import weighted_loss
 from ordinal_dnn.utils.eval_eng import eval_test
-import ordinal_dnn.utils.utils_functions as uf
-from torch.nn.utils import clip_grad_value_
+
 
 def stopping_epoch(val_df, early_stopping):
     best_cost = 0
@@ -26,7 +20,7 @@ def stopping_epoch(val_df, early_stopping):
             best_epoch = row['epoch']
 
         # find stopping epoch
-        if best_cost - row['or cost'] >= best_cost * 0.025: #0.05:
+        if best_cost - row['or cost'] >= best_cost * 0.025:  # 0.05:
             best_epoch = row['epoch']
             best_cost = row['or cost']
 
@@ -38,9 +32,9 @@ def stopping_epoch(val_df, early_stopping):
 
 def train_model(args, model, dset_loaders, dset_size):
     cost_matrix = args.cost_matrix
-    best_acc, best_epoch_for_mse, best_epoch_for_cost, best_mse, best_stop_cost = 0, 0, 0, 1., cost_matrix[0, cost_matrix.shape[0]-1]
-    best_models_path = os.path.join(args.model_dir, args.model_name) #, str(args.session))
-
+    best_acc, best_epoch_for_mse, best_epoch_for_cost, best_mse, best_stop_cost = 0, 0, 0, 1., cost_matrix[
+        0, cost_matrix.shape[0] - 1]
+    best_models_path = os.path.join(args.model_dir, args.model_name)  # , str(args.session))
 
     # Clean best_models_path from old models
     if os.path.exists(best_models_path):
@@ -62,13 +56,11 @@ def train_model(args, model, dset_loaders, dset_size):
         optimizer = optim.RMSprop(model.parameters(), lr=args.lr,
                                   weight_decay=args.weight_decay, momentum=0.9)
 
-
     lr_scheduler = LRScheduler(args.lr, args.lr_decay_epoch)
-
 
     for epoch in range(args.num_epoch):
         since = time.time()
-        print('Epoch {}/{}'.format(str(epoch+1), args.num_epoch))
+        print('Epoch {}/{}'.format(str(epoch + 1), args.num_epoch))
         for phase in ['train', 'val']:
             list_labels = []
             if phase == 'train':
@@ -89,7 +81,6 @@ def train_model(args, model, dset_loaders, dset_size):
                 optimizer.zero_grad()
                 outputs = model(inputs)
 
-
                 if isinstance(outputs, tuple):
                     outputs = outputs[0]
 
@@ -101,7 +92,6 @@ def train_model(args, model, dset_loaders, dset_size):
                     loss = weighted_loss(outputs, labels, args, cost_matrix)
                 else:
                     raise NotImplementedError("choose wloss 0 or 1")
-                # print(loss.item())
 
                 if phase == 'train':
                     loss.backward()
@@ -110,11 +100,6 @@ def train_model(args, model, dset_loaders, dset_size):
 
                 running_loss += loss.data
                 running_corrects += torch.sum(preds == labels.data)
-
-
-            # epoch_loss = 1.0 * running_loss.cpu().tolist() / dset_size[phase]
-            # epoch_acc = 1.0 * running_corrects.cpu().tolist() / dset_size[phase]
-            # elapse_time = time.time() - since
 
             phase_acc, phase_mse, outputs_all, labels_all = eval_test(args, model, dset_loaders, dset_size, phase)
 
