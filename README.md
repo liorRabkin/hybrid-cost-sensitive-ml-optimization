@@ -1,31 +1,15 @@
-#  Knee Osteoarthritis Analysis
+#  A Hybrid Cost-Sensitive Machine Learning and Optimization Models
 
-#### Pipeline of knee osteoarthritis grading pipeline, which includes knee joints detection and knee OA grading.
+#### We propose a comprehensive analytic framework for scenarios that, in addition to including multi-class classification problems with misclassification costs, also have constraints on the number of classified samples of classes due to resource limitations.
 
-![klg_pipeline](klg_pipeline.png)
-
-### DetJoint
-- Detecting two knee joints in X-ray images using a customized YOLOv2 model.
-
-### ClsKL
-- Classifying the KL grade of detected knee joints with a novel ordinal loss.
+![algorithm](algorithm.png)
 
 
-## Data & Models
-Knee joint detection (DetJoint) and KL grading (ClsKL) training/testing datasets, as well as best models, can be downloaded from [KneeXrayData](https://data.mendeley.com/datasets/56rmx5bjcr/1), around 7G.
+## Data
+We applied our framework on a public available data set obtained from the Osteoarthritis Initiative (OAI). 
+The dataset made available after a prepossessing stage at [KneeXrayData](https://data.mendeley.com/datasets/56rmx5bjcr/1).
 
 
-## Citation
-Please consider `cite` the paper if you use the code or data for your research.
-```
-@article{chen2019fully,
-  title={Fully Automatic Knee Osteoarthritis Severity Grading Using Deep Neural Networks with a Novel Ordinal Loss},
-  author={Chen, Pingjun and Gao, Linlin and Shi, Xiaoshuang and Allen, Kyle and Yang Lin},
-  journal={Computerized Medical Imaging and Graphics},,
-  volume={75},
-  pages={84--92},
-  year={2019},
-  doi={https://doi.org/10.1016/j.compmedimag.2019.06.002},
-  publisher={Elsevier}  
-}
-```
+## Thesis project
+This project was created as part of my MSc degree, Supervised by Dr. Gonen Singer and Dr.Ilan Cohen.
+
